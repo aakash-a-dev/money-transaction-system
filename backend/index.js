@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const rootRouter = require("./routes/index")
-const {signupBody} = require("./types");
+const {signupBody, signinBody} = require("./types");
 const router = require("./routes/user");
 const app = express();
 const { User } = require("./db");
@@ -15,7 +15,6 @@ app.use(cors());
 app.use("/api/v1", rootRouter);
 
 app.post("/signup", async (req, res) => {
-    console.log(process.env.JWT_SECRET);
     const { success } = signupBody.safeParse(req.body)
     if (!success) {
         return res.status(411).json({
@@ -50,6 +49,36 @@ app.post("/signup", async (req, res) => {
         message: "User created successfully",
         token: token
     })
+})
+
+app.post("/signin", async (req, res) => {
+    const { success } = signinBody.safeParse(req.body);
+    if (!success) {
+                return res.status(411).json({
+            message: "Incorrect inputs"
+        })
+    }
+
+    const user = await User.findOne({
+        username: req.body.username,
+        password: req.body.password
+    });
+
+    if (user) {
+        const token = jwt.sign({
+            userId: user._id
+        }, JWT_SECRET)
+
+        res.json({
+            token: token
+        })
+        return;
+    }
+
+       res.status(411).json({
+        message: "Error while logging in"
+    })
+
 })
 
 app.listen(3000, () => {
