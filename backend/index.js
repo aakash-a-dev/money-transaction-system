@@ -7,6 +7,7 @@ const app = express();
 const { User } = require("./db");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("./config");
+const bcrypt = require('bcrypt');
 
 require('dotenv').config();
 app.use(express.json());
@@ -31,10 +32,11 @@ app.post("/signup", async (req, res) => {
             message: "Email already taken/Incorrect Inputs"
         })
     }
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
     const user = await User.create({
         username: req.body.username,
-        password: req.body.password,
+        password: hashedPassword,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
     })
@@ -61,8 +63,18 @@ app.post("/signin", async (req, res) => {
 
     const user = await User.findOne({
         username: req.body.username,
-        password: req.body.password
     });
+
+    
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    const passwordMatch = await bcrypt.compare(req.body.password, user.password);
+
+    if (!passwordMatch) {
+        return res.status(401).json({ message: "Incorrect password" });
+    }
 
     if (user) {
         const token = jwt.sign({
