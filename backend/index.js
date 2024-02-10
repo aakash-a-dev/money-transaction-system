@@ -93,6 +93,11 @@ app.post("/signin", async (req, res) => {
 
 })
 
+
+app.put("/update", (req, res) => {
+    
+})
+
 app.listen(3000, () => {
     console.log(`Server started at http://localhost:3000`);
 })
