@@ -1,13 +1,14 @@
 const express = require("express");
 const cors = require("cors");
 const rootRouter = require("./routes/index")
-const {signupBody, signinBody} = require("./types");
+const {signupBody, signinBody, updateBody} = require("./types");
 const router = require("./routes/user");
 const app = express();
 const { User } = require("./db");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("./config");
 const bcrypt = require('bcrypt');
+const { authMiddleware } = require("./middleware");
 
 require('dotenv').config();
 app.use(express.json());
@@ -94,8 +95,21 @@ app.post("/signin", async (req, res) => {
 })
 
 
-app.put("/update", (req, res) => {
-    
+app.put("/", authMiddleware, async (req, res) => {
+    const { success } = updateBody.safeParse(req.body);
+    if (!success) {
+        res.status(411).json({
+            message: "Error while updating information"
+        })
+
+        await User.updateOne(req.body, {
+        _id: req.userId
+    })
+
+    res.json({
+        message: "Updated successfully"
+    })
+    }
 })
 
 app.listen(3000, () => {
