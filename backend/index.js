@@ -4,7 +4,7 @@ const rootRouter = require("./routes/index")
 const {signupBody, signinBody, updateBody} = require("./types");
 const router = require("./routes/user");
 const app = express();
-const { User } = require("./db");
+const { User, Account } = require("./db");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("./config");
 const bcrypt = require('bcrypt');
@@ -69,6 +69,10 @@ app.post("/signup", async (req, res) => {
     })
 
     const userId = user._id;
+
+    await Account.create({
+        balance: 1 + Math.random() * 1000
+    })
 
     const token = jwt.sign({
         userId
