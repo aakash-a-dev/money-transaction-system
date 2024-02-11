@@ -16,7 +16,8 @@ app.use(cors());
 
 app.use("/api/v1", rootRouter);
 
-app.get("/bulk", async (req, res) => {
+
+router.get("/bulk", async (req, res) => {
     const filter = req.query.filter || "";
 
     const user = await User.find({
@@ -42,7 +43,17 @@ app.get("/bulk", async (req, res) => {
     })
 })
 
-app.post("/signup", async (req, res) => {
+router.get("/balance", authMiddleware, async (req, res) => {
+    const account = await Account.findOne({
+        userId: req.userId
+    });
+
+    res.json({
+        balance: account.balance
+    })
+})
+
+router.post("/signup", async (req, res) => {
     const { success } = signupBody.safeParse(req.body)
     if (!success) {
         return res.status(411).json({
@@ -84,7 +95,7 @@ app.post("/signup", async (req, res) => {
     })
 })
 
-app.post("/signin", async (req, res) => {
+router.post("/signin", async (req, res) => {
     const { success } = signinBody.safeParse(req.body);
     if (!success) {
                 return res.status(411).json({
@@ -125,7 +136,7 @@ app.post("/signin", async (req, res) => {
 })
 
 
-app.put("/", authMiddleware, async (req, res) => {
+router.put("/", authMiddleware, async (req, res) => {
     const { success } = updateBody.safeParse(req.body);
     if (!success) {
         res.status(411).json({
