@@ -37,7 +37,7 @@ router.post("/signup", async (req, res) => {
     const { success } = signupBody.safeParse(req.body)
     if (!success) {
         return res.status(411).json({
-            message: "Email already taken / Incorrect Input"
+            message: "Incorrect Input"
         })
     }
 
@@ -47,7 +47,7 @@ router.post("/signup", async (req, res) => {
 
     if (existingUser) {
         return res.status(411).json({
-            message: "Email already taken/Incorrect Inputs"
+            message: "Email already taken"
         })
     }
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
@@ -58,10 +58,11 @@ router.post("/signup", async (req, res) => {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
     })
-
+    console.log("Passed");
     const userId = user._id;
 
     await Account.create({
+         userId,
         balance: 1 + Math.random() * 1000
     })
 
